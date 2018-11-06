@@ -15,8 +15,8 @@ contract Traces {
     mapping (uint256 => mapping (uint256 => address)) private _logs;
     mapping (uint256 => uint256) private _transferTimes;
 
-    event NewCargo(uint256 indexed _cargoID, address indexed _creater);
-    event Transfer(uint256 indexed _cargoID, address indexed _from, address indexed _to);
+    event NewCargo(address indexed _creater, uint256 _cargoID);
+    event Transfer(uint256 indexed _cargoID, address indexed _from, address _to);
     event Authorize(address indexed _address, bool _state);
 
     constructor () public {
@@ -27,6 +27,7 @@ contract Traces {
     function capacity () public view returns (uint256) { return _capacity; }
     function capacityOf (address _owner) public view returns (uint256) { return _cargoesCount[_owner]; }
     function cargoNameOf (uint256 _cargoID) public view returns (string) { return _cargoesName[_cargoID]; }
+    function permissionOf (address _user) public view returns (bool) { return _authorization[_user]; }
     function transferTimesOf (uint256 _cargoID) public view returns (uint256) {
         return _transferTimes[_cargoID];
     }
@@ -66,7 +67,7 @@ contract Traces {
         _cargoesName[cargoID] = _cargoName;
         _logs[cargoID][0] = msg.sender;
         _addToHolder(msg.sender, cargoID);
-        emit NewCargo(cargoID, msg.sender);
+        emit NewCargo(msg.sender, cargoID);
         _cargoesCount[msg.sender]++;
         _capacity++;
     }

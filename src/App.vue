@@ -165,7 +165,7 @@ section
 label
   display block
   line-height 40px
-  width 130px
+  width 90px
   height 40px
 input
   font-family inherit
@@ -235,9 +235,9 @@ input
   div
     background-color #0d85da
     cursor pointer
-    transform translateY(-10px)
+    transform translateY(-6px)
     &:hover
-      transform translateY(-6px)
+      transform translateY(-3px)
 
 .trace-decimals
   font-size 14px

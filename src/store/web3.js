@@ -2,11 +2,11 @@ import Web3 from 'web3'
 
 import ABI from './ABI.json'
 
-const contractAddress = '0xA3183498b579bd228aa2B62101C40CC1da978F24'
+const contractAddress = '0xdB587ef6aaA16b5719CDd3AaB316F0E70473e9Be'
 
 const web3 = new Web3('https://api.truescan.net/rpc')
 const contract = new web3.eth.Contract(ABI, contractAddress)
-
+window.contract = contract
 class Cargo {
   constructor (id) {
     this.id = id
@@ -47,6 +47,11 @@ const defaultUser = [
   { priKey: '0x03', address: '0x6813eb9362372eef6200f3b1dbc3f819671cba69' },
   { priKey: '0x04', address: '0x1eff47bc3a10a45d4b230b5d10e37751fe6aa718' }
 ]
+
+defaultUser.forEach(account => {
+  const ac = web3.eth.accounts.privateKeyToAccount(account.priKey)
+  web3.eth.accounts.wallet.add(ac)
+})
 
 export default {
   namespaced: true,
@@ -104,6 +109,18 @@ export default {
         })
       }).catch(() => {
         dispatch('checkNetwork')
+      })
+    },
+    createNewCargo ({ state, dispatch }, name) {
+      name = name || 'UNNAMED'
+      const address = defaultUser[state.userIndex].address
+      return contract.methods.createNewCargo(name).send({
+        from: address,
+        gasPrice: 1,
+        gas: 3000000
+      }).catch(err => {
+        dispatch('checkNetwork')
+        return err
       })
     }
   }

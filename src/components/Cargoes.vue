@@ -19,6 +19,16 @@
       </li>
     </ul>
     <div class="trace-content-title">创建新商品</div>
+    <div class="trace-create">
+      <div>
+        <label for="input-cargo-name">商品名称</label>
+        <input id="input-cargo-name" type="text" v-model="inputName" :disabled="creationState" >
+        <div class="trace-button" :class="{ 'trace-button-active': inputName && !creationState }">
+          <div @click="createCargo">{{creationState ? '创建中...' : '创建'}}</div>
+        </div>
+      </div>
+      <div class="trace-notice">如果点击创建后长时间没有反应，请通过<a target="_blank" href="https://www.truescan.net/tx">TrueScan</a>确认交易状态，谨慎<a @click="refreshCreateButton" href="javascript: void 0">强制刷新</a></div>
+    </div>
   </div>
 </template>
 
@@ -30,6 +40,8 @@ export default {
   name: 'Cargoes',
   data () {
     return {
+      inputName: '',
+      creationState: false,
       cCNLoaded: 0,
       createCargoesNames: [],
       hCNLoaded: 0,
@@ -51,8 +63,10 @@ export default {
   },
   methods: {
     ...mapActions({
+      'notice': 'notice',
       'allCreated': 'web3/allCreated',
-      'allHolding': 'web3/allHolding'
+      'allHolding': 'web3/allHolding',
+      'createNewCargo': 'web3/createNewCargo'
     }),
     queryCreateCargoes () {
       this.allCreated().then(res => {
@@ -64,6 +78,30 @@ export default {
       this.allHolding().then(res => {
         this.holdCargoesNames = res
         this.hCNLoaded = 2
+      })
+    },
+    refreshCreateButton () {
+      this.creationState = false
+    },
+    createCargo () {
+      if (!this.inputName || this.creationState) {
+        return
+      }
+      const name = this.inputName
+      this.creationState = true
+      this.createNewCargo(name).then(res => {
+        this.creationState = false
+        if (res.events) {
+          const id = res.events.NewCargo.returnValues._cargoID
+          this.queryCreateCargoes()
+          this.queryHoldCargoes()
+          this.notice(['log', `商品记录创建成功 名称：${name}<br>ID：${id}`, 10000])
+          this.inputName = ''
+        } else if (/reverted by the EVM/.test(res.message)) {
+          this.notice(['error', `未能成功创建商品记录：${name} 请和管理员确认是否有操作权限`, 10000])
+        } else {
+          this.notice(['error', `未能成功创建商品记录：${name} 可能是由于网络等原因导致的`, 10000])
+        }
       })
     }
   }
@@ -116,6 +154,14 @@ export default {
       background-origin center
       background-repeat no-repeat
       background-image url('../assets/path.svg')
+.trace-create
+  margin 10px 0 20px
+  >div:first-child
+    display flex
+  .trace-button
+    margin-left 20px
+.trace-notice
+  margin-top 6px
 @media screen and (max-width 800px)
   .trace-cargoes
     grid-template-columns repeat(3, 1fr)
