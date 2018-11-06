@@ -13,14 +13,13 @@ class Cargo {
     this.name = '...'
     this.traces = []
     this.updated = false
+    contract.methods.cargoNameOf(this.id).call().then(name => {
+      this.name = name
+    })
     this.update()
   }
   update () {
-    Promise.all([
-      contract.methods.cargoNameOf(this.id).call(),
-      contract.methods.tracesOf(this.id).call()
-    ]).then(([name, traces]) => {
-      this.name = name
+    contract.methods.tracesOf(this.id).call().then(traces => {
       this.traces = traces
       this.updated = new Date()
     }).catch(() => {
@@ -30,6 +29,7 @@ class Cargo {
   }
 }
 const nameMap = new Map()
+window.nameMap = nameMap
 function findOrCreateCargoInfo (id) {
   const cache = nameMap.get(id)
   if (cache) {
@@ -42,10 +42,10 @@ function findOrCreateCargoInfo (id) {
 }
 
 const defaultUser = [
-  { priKey: '0x01', address: '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf' },
-  { priKey: '0x02', address: '0x2b5ad5c4795c026514f8317c7a215e218dccd6cf' },
-  { priKey: '0x03', address: '0x6813eb9362372eef6200f3b1dbc3f819671cba69' },
-  { priKey: '0x04', address: '0x1eff47bc3a10a45d4b230b5d10e37751fe6aa718' }
+  { priKey: '0x01', address: '0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf' },
+  { priKey: '0x02', address: '0x2B5AD5c4795c026514f8317c7a215E218DcCD6cF' },
+  { priKey: '0x03', address: '0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69' },
+  { priKey: '0x04', address: '0x1efF47bc3a10a45D4B230B5d10E37751FE6AA718' }
 ]
 
 defaultUser.forEach(account => {
@@ -65,6 +65,11 @@ export default {
 
     userIndex: 0,
     contractAddress
+  },
+  getters: {
+    address (state) {
+      return defaultUser[state.userIndex].address
+    }
   },
   mutations: {
     updateNetworkState (state, name) {
@@ -91,6 +96,9 @@ export default {
         }, 3000)
       })
     },
+    getCargo (_, id) {
+      return findOrCreateCargoInfo(id)
+    },
     allCreated ({ state, dispatch }, address) {
       address = address || defaultUser[state.userIndex].address
       return contract.methods.allCreated(address).call().then(res => {
@@ -115,6 +123,17 @@ export default {
       name = name || 'UNNAMED'
       const address = defaultUser[state.userIndex].address
       return contract.methods.createNewCargo(name).send({
+        from: address,
+        gasPrice: 1,
+        gas: 3000000
+      }).catch(err => {
+        dispatch('checkNetwork')
+        return err
+      })
+    },
+    transfer ({ state, dispatch }, [id, target]) {
+      const address = defaultUser[state.userIndex].address
+      return contract.methods.transfer(id, target).send({
         from: address,
         gasPrice: 1,
         gas: 3000000

@@ -5,6 +5,7 @@
     <div class="trace-cargoes-notice" v-else-if="cCNLoaded === 2 && !createCargoesNames.length">没有对应记录</div>
     <ul class="trace-cargoes" v-else>
       <li class="trace-cargo" v-for="(cargo, index) in createCargoesNames" :key="index">
+        <span class="detials" @click="cargoDetails(cargo)"></span>
         <span class="name">{{cargo.name}}</span>
         <span class="traces">{{cargo.traces.length - 1}}</span>
       </li>
@@ -14,6 +15,7 @@
     <div class="trace-cargoes-notice" v-else-if="hCNLoaded === 2 && !holdCargoesNames.length">没有对应记录</div>
     <ul class="trace-cargoes" v-else>
       <li class="trace-cargo" v-for="(cargo, index) in holdCargoesNames" :key="index">
+        <span class="detials" @click="cargoDetails(cargo)"></span>
         <span class="name">{{cargo.name}}</span>
         <span class="traces">{{cargo.traces.length - 1}}</span>
       </li>
@@ -80,6 +82,9 @@ export default {
         this.hCNLoaded = 2
       })
     },
+    cargoDetails (cargo) {
+      this.$emit('queryDetails', cargo)
+    },
     refreshCreateButton () {
       this.creationState = false
     },
@@ -128,8 +133,24 @@ export default {
 .trace-cargo
   border solid 1px #ddd
   border-radius 3px
-  padding 10px
+  padding 10px 10px 10px 12px
   line-height 24px
+  position relative
+  overflow hidden
+  .detials
+    position absolute
+    right -3px
+    bottom  -8px
+    transform rotate(45deg)
+    width 10px
+    height 20px
+    background-color #0d85da
+    display block
+    cursor pointer
+    opacity .6
+    transition opacity .3s
+    &:hover
+      opacity 1
   .name
     display inline-block
     white-space nowrap

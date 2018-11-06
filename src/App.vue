@@ -34,7 +34,9 @@
       </div>
     </section>
     <section v-if="!beforeRefresh">
-      <cargoes v-show="route === 'm0'" />
+      <cargoes v-show="route === 'm0'" @queryDetails="showDetails" />
+      <query v-show="route === 'm1'" ref="query" />
+      <manage v-show="route === 'a0'" />
     </section>
     <notice />
   </div>
@@ -44,6 +46,8 @@
 import { mapState } from 'vuex'
 import Notice from '@/components/Notice'
 import Cargoes from '@/components/Cargoes'
+import Query from '@/components/Query'
+import Manage from '@/components/Manage'
 
 export default {
   name: 'App',
@@ -55,8 +59,8 @@ export default {
       userIndex: 0,
       route: 'm0',
       menu: [
-        '商品管理',
-        '信息查询'
+        '商品查看',
+        '查询管理'
       ],
       adminMenu: [
         '权限管理'
@@ -97,11 +101,17 @@ export default {
       this.admin = isAdmin
       this.userIndex = index
       this.$store.commit('web3/updateUser', index)
+    },
+    showDetails (cargo) {
+      this.route = 'm1'
+      this.$refs.query.queryCargo(cargo.id)
     }
   },
   components: {
     Notice,
-    Cargoes
+    Cargoes,
+    Query,
+    Manage
   }
 }
 </script>
