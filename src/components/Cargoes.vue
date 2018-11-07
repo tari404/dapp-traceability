@@ -29,7 +29,7 @@
           <label for="input-cargo-name">商品名称</label>
           <input id="input-cargo-name" type="text" v-model="inputName" :disabled="creationState" >
           <div class="trace-button" :class="{ 'trace-button-active': inputName && !creationState }">
-            <div @click="createCargo">{{creationState ? '创建中...' : '创建'}}</div>
+            <div class="need-to-pay" @click="createCargo">{{creationState ? '创建中...' : '创建'}}</div>
           </div>
         </div>
         <div class="trace-notice">如果点击创建后长时间没有反应，请通过<a target="_blank" href="https://www.truescan.net/tx">TrueScan</a>确认交易状态，谨慎<a @click="refreshCreateButton" href="javascript: void 0">强制刷新</a></div>
@@ -184,7 +184,6 @@ export default {
       width 14px
       height 14px
       background-size contain
-      background-origin center
       background-repeat no-repeat
       background-image url('../assets/path.svg')
 .trace-create
@@ -193,8 +192,6 @@ export default {
     display flex
   .trace-button
     margin-left 20px
-.trace-notice
-  margin-top 6px
 @media screen and (max-width 800px)
   .trace-cargoes
     grid-template-columns repeat(3, 1fr)

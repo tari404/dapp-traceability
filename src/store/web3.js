@@ -75,6 +75,9 @@ export default {
   getters: {
     address (state) {
       return defaultUser[state.userIndex].address
+    },
+    addressByIndex: _ => index => {
+      return defaultUser[index].address
     }
   },
   mutations: {
@@ -101,7 +104,6 @@ export default {
     },
     updatePermission ({ state }, address) {
       contract.methods.permissionOf(address).call().then(res => {
-        console.log(res)
         state.permissions[address] = res
       })
     },
@@ -112,6 +114,11 @@ export default {
     },
     getCargo (_, id) {
       return findOrCreateCargoInfo(id)
+    },
+    async permissionOf ({ dispatch }, address) {
+      return contract.methods.permissionOf(address).call().catch(() => {
+        dispatch('checkNetwork')
+      })
     },
     async allCreated ({ state, dispatch }, address) {
       address = address || defaultUser[state.userIndex].address

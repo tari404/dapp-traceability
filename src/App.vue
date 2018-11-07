@@ -44,12 +44,14 @@
       <manage v-show="route === 'a0'" />
     </section>
     <notice />
+    <copyboard />
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import Notice from '@/components/Notice'
+import Copyboard from '@/components/Copyboard'
 import Cargoes from '@/components/Cargoes'
 import Query from '@/components/Query'
 import Manage from '@/components/Manage'
@@ -124,6 +126,7 @@ export default {
   },
   components: {
     Notice,
+    Copyboard,
     Cargoes,
     Query,
     Manage
@@ -246,8 +249,20 @@ input
 .trace-content-title
   font-size 18px
   line-height 30px
+  position relative
+  &:before
+    content ''
+    position absolute
+    top 8px
+    left -22px
+    width 0
+    height 0
+    border-left solid 6px #0d85da
+    border-top solid 6px transparent
+    border-bottom solid 6px transparent
 
 .trace-notice
+  margin-top 4px
   font-size 12px
   color #666
 
@@ -260,10 +275,22 @@ input
   line-height 40px
   background-color #ccc
   transition background-color .4s
+  position relative
   div
     border-radius 3px
     transition background-color .4s,transform .4s
     background-color #bbb
+  .need-to-pay:after
+    content ''
+    position absolute
+    top 5px
+    right 8px
+    width 26px
+    height 26px
+    background-image url(./assets/pay.svg)
+    background-size contain
+    background-position center
+    background-repeat no-repeat
 .trace-button-active
   background-color #0072c1
   div

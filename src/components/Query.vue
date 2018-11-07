@@ -8,18 +8,27 @@
         <div @click="queryCargo(inputID)">查询</div>
       </div>
     </div>
+    <div class="trace-notice">商品ID为一个长整数，或者从商品查看菜单中点击蓝色小三角直接查看对应商品</div>
     <div v-if="focusCargo">
       <br class="trace-blank">
       <div class="trace-no-cargo" v-if="notExist">商品不存在</div>
       <div class="trace-cargo-details" v-else>
-        <p><span class="key">商品名称</span>{{focusCargo.name}}</p>
-        <p><span class="key">创建者</span>{{focusCargo.traces[0]}}</p>
-        <p>
-          <span class="key">持有者</span>
-          {{holder}}
-          <span class="time">更新时间 {{focusCargo.updated.toString().substr(16, 8)}}</span>
-        </p>
-        <p><span class="key">流通次数</span>{{tracesLength}}</p>
+        <div>
+          <p>
+            <span class="key">商品名称</span>
+            <span>{{focusCargo.name}}</span>
+          </p>
+          <p>
+            <span class="key">创建者</span>
+            <span class="address">{{focusCargo.traces[0]}}</span>
+          </p>
+          <p>
+            <span class="key">持有者</span>
+            <span class="address">{{holder}}</span>
+            <span class="time">更新时间 {{focusCargo.updated.toString().substr(16, 8)}}</span>
+          </p>
+          <p><span class="key">流通次数</span>{{tracesLength}}</p>
+        </div>
         <ul class="trace-cargo-traces">
           <li v-for="(node, index) in focusCargo.traces" :key="index" :data="index">
             {{node}}
@@ -32,7 +41,7 @@
             <label for="input-cargo-target">目标地址</label>
             <input id="input-cargo-target" type="text" v-model="inputTarget" :disabled="transferState" >
             <div class="trace-button" :class="{ 'trace-button-active': utils.isAddress(inputTarget) && !transferState }">
-              <div @click="transferCargo">{{transferState ? '转移中...' : '转移'}}</div>
+              <div class="need-to-pay" @click="transferCargo">{{transferState ? '转移中...' : '转移'}}</div>
             </div>
           </div>
           <div class="trace-notice">你是这个商品的当前持有者，有权转移改商品。转移权将同商品本身一同转移。</div>
@@ -151,6 +160,10 @@ export default {
   border-radius 3px
   padding 10px
 .trace-cargo-details
+  >div:first-child
+    padding 10px
+    border-radius 5px 5px 0 0
+    border solid 1px #f0f0f0
   p
     line-height 30px
     margin 0
@@ -158,16 +171,18 @@ export default {
   .key
     flex 0 0 80px
     color #999
+  .address
+    overflow hidden
+    text-overflow ellipsis
   .time
     flex 1 0 110px
     color #2fa4d9
     text-align right
     font-size 12px
 .trace-cargo-traces
-  margin-top 10px
   background-color #f0f0f0
   padding 10px
-  border-radius 5px
+  border-radius 0 0 5px 5px
   li
     width 320px
     margin auto
@@ -198,6 +213,4 @@ export default {
     display flex
   .trace-button
     margin-left 20px
-.trace-notice
-  margin-top 6px
 </style>

@@ -5,7 +5,7 @@
       <span class="trace-update-time">更新时间 {{permissionsUpdated.toString().substr(16, 8)}}</span>
     </div>
     <div class="trace-notice">所有的权限更改操作都需要手续费！请不要无计划的随意变动<br>如果你的账户是多人/应用所使用的，则链上的数据随时可能发生变化，调用前请及时刷新数据</div>
-    <ul class="trace-permission" :class="{ 'trace-permission-disable': true }">
+    <ul class="trace-permission" :class="{ 'trace-permission-disable': switchState }">
       <li v-for="(value, key) in permissions" :key="key">
         <span class="name">{{accountName[key]}}</span>
         <span class="address">{{key}}</span>
@@ -13,6 +13,23 @@
       </li>
     </ul>
     <div class="trace-notice">仅在展示版平台中可以看到预定义的地址权限列表</div>
+    <br class="trace-blank">
+    <div class="trace-content-title">权限查询</div>
+    <div class="trace-premission-query">
+      <label for="input-cargo-permission">账户地址</label>
+      <input id="input-cargo-permission" type="text" v-model="inputAddress">
+      <div class="trace-button" :class="{ 'trace-button-active': utils.isAddress(inputAddress) }">
+        <div @click="queryPermission">查询</div>
+      </div>
+    </div>
+    <div v-if="queryAddress">
+      <ul class="trace-permission" :class="{ 'trace-permission-disable': switchState }">
+        <li>
+          <span class="address">{{queryAddress}}</span>
+          <span class="switch" :class="{ 'switch-on': queryState }" @click="toSetPermission(queryAddress)" />
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -30,11 +47,17 @@ export default {
   name: 'Manage',
   data () {
     return {
-      accountName
+      inputAddress: '',
+      accountName,
+      switchState: false,
+
+      queryAddress: '',
+      queryState: false
     }
   },
   computed: {
     ...mapState({
+      utils: state => state.web3.utils,
       permissions: state => state.web3.permissions,
       permissionsUpdated: state => state.web3.permissionsUpdated
     })
@@ -42,12 +65,46 @@ export default {
   methods: {
     ...mapActions({
       notice: 'notice',
+      permissionOf: 'web3/permissionOf',
       setPermission: 'web3/setPermission'
     }),
+    queryPermission () {
+      const address = this.inputAddress
+      if (!this.utils.isAddress(address)) {
+        return
+      }
+      this.permissionOf(address).then(res => {
+        this.queryAddress = address
+        this.queryState = res
+      })
+    },
     togglePermission (address) {
       const setState = !this.permissions[address]
+      this.switchState = true
       this.setPermission([address, setState]).then(res => {
+        this.switchState = false
         if (res.events) {
+          if (this.queryAddress === address) {
+            this.queryState = setState
+          }
+          this.notice(['log', `账户${address}创建商品权限已${setState ? '打开' : '关闭'}`, 10000])
+        } else if (/reverted by the EVM/.test(res.message)) {
+          this.notice(['error', `未能成功设置权限 输入参数可能有错误或无权操作`, 10000])
+        } else {
+          this.notice(['error', `未能成功设置权限 可能是由于网络等原因导致的`, 10000])
+        }
+      })
+    },
+    toSetPermission () {
+      this.switchState = true
+      const address = this.queryAddress
+      const setState = !this.queryState
+      this.setPermission([address, setState]).then(res => {
+        this.switchState = false
+        if (res.events) {
+          if (this.queryAddress === address) {
+            this.queryState = setState
+          }
           this.notice(['log', `账户${address}创建商品权限已${setState ? '打开' : '关闭'}`, 10000])
         } else if (/reverted by the EVM/.test(res.message)) {
           this.notice(['error', `未能成功设置权限 输入参数可能有错误或无权操作`, 10000])
@@ -61,6 +118,8 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+.trace-content
+  margin-bottom 160px
 .trace-update-time
   color #2fa4d9
   float right
@@ -72,6 +131,17 @@ export default {
   padding 10px
   border-radius 5px
   border dashed 1px #ddd
+  &:before
+    content ''
+    position absolute
+    bottom 14px
+    right 8px
+    width 26px
+    height 26px
+    background-image url(../assets/pay_blue.svg)
+    background-size contain
+    background-position center
+    background-repeat no-repeat
   li
     line-height 30px
     display flex
@@ -106,12 +176,19 @@ export default {
 .trace-permission-disable
   &:after
     content ''
+    color #fff
+    text-align center
     position absolute
     top 0
     left 0
     width 100%
     height 100%
-    background-color #0001
+    background-color #0003
+.trace-premission-query
+  margin-top 10px
+  display flex
+  .trace-button
+    margin-left 20px
 @media screen and (max-width 600px)
   .trace-permission li .address
     font-size 12px
