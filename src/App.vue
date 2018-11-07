@@ -6,11 +6,16 @@
         <div class="trace-user">
           使用<span :class="{'focus': admin}" @click="toggleUser(true, 0)">管理员</span>
           <span :class="{'focus': !admin && userIndex === 1}" @click="toggleUser(false, 1)">普通1</span>
-          <span :class="{'focus': !admin && userIndex === 2}" @click="toggleUser(false, 2)">普通3</span>
+          <span :class="{'focus': !admin && userIndex === 2}" @click="toggleUser(false, 2)">普通2</span>
           <span :class="{'focus': !admin && userIndex === 3}" @click="toggleUser(false, 3)">普通3</span>账号
         </div>
       </div>
     </nav>
+    <section>
+      <div class="main-width trace-account">
+        账户地址：{{address}}
+      </div>
+    </section>
     <section>
       <div class="main-width">
         <span class="trace-network-name">合约名称：{{contractName}}</span>
@@ -43,7 +48,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 import Notice from '@/components/Notice'
 import Cargoes from '@/components/Cargoes'
 import Query from '@/components/Query'
@@ -72,21 +77,28 @@ export default {
       contractName: state => state.web3.name,
       networkState: state => state.web3.state
     }),
+    ...mapGetters({
+      address: 'web3/address'
+    }),
     networkNotice () {
       switch (this.networkState) {
         case 1:
-          return '网络链接正常'
+          return '网络连接正常'
         case 2:
-          return '网络链接异常'
+          return '网络连接异常'
         default:
           return ''
       }
     }
   },
   created () {
-    this.$store.dispatch('web3/checkNetwork')
+    this.checkNetwork()
   },
   methods: {
+    ...mapActions({
+      checkNetwork: 'web3/checkNetwork',
+      updateUser: 'web3/updateUser'
+    }),
     toggleRoute (index) {
       this.route = index
     },
@@ -94,13 +106,16 @@ export default {
       if (this.admin === isAdmin && this.index === index) {
         return
       }
+      if (/a/.test(this.route) && isAdmin === false) {
+        this.route = 'm0'
+      }
       this.beforeRefresh = true
       this.$nextTick(() => {
         this.beforeRefresh = false
       })
       this.admin = isAdmin
       this.userIndex = index
-      this.$store.commit('web3/updateUser', index)
+      this.updateUser(index)
     },
     showDetails (cargo) {
       this.route = 'm1'
@@ -139,6 +154,9 @@ li
   flex 0 1 800px
   min-width 480px
   box-sizing border-box
+
+.trace-blank
+  line-height 20px
 
 nav
   height 80px
@@ -188,6 +206,12 @@ input
   height 40px
   margin 0
   padding 0 9px
+
+.trace-account
+  padding 10px 20px
+  border-radius 5px
+  border dashed 1px #aaa
+  color #666
 
 .trace-network-name
   font-size 16px

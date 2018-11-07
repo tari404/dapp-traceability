@@ -10,6 +10,7 @@
         <span class="traces">{{cargo.traces.length - 1}}</span>
       </li>
     </ul>
+    <br class="trace-blank">
     <div class="trace-content-title">我拥有的商品</div>
     <div class="trace-cargoes-notice" v-if="hCNLoaded === 1">加载中...</div>
     <div class="trace-cargoes-notice" v-else-if="hCNLoaded === 2 && !holdCargoesNames.length">没有对应记录</div>
@@ -20,22 +21,26 @@
         <span class="traces">{{cargo.traces.length - 1}}</span>
       </li>
     </ul>
+    <br class="trace-blank">
     <div class="trace-content-title">创建新商品</div>
-    <div class="trace-create">
-      <div>
-        <label for="input-cargo-name">商品名称</label>
-        <input id="input-cargo-name" type="text" v-model="inputName" :disabled="creationState" >
-        <div class="trace-button" :class="{ 'trace-button-active': inputName && !creationState }">
-          <div @click="createCargo">{{creationState ? '创建中...' : '创建'}}</div>
+    <div v-if="permissive">
+      <div class="trace-create">
+        <div>
+          <label for="input-cargo-name">商品名称</label>
+          <input id="input-cargo-name" type="text" v-model="inputName" :disabled="creationState" >
+          <div class="trace-button" :class="{ 'trace-button-active': inputName && !creationState }">
+            <div @click="createCargo">{{creationState ? '创建中...' : '创建'}}</div>
+          </div>
         </div>
+        <div class="trace-notice">如果点击创建后长时间没有反应，请通过<a target="_blank" href="https://www.truescan.net/tx">TrueScan</a>确认交易状态，谨慎<a @click="refreshCreateButton" href="javascript: void 0">强制刷新</a></div>
       </div>
-      <div class="trace-notice">如果点击创建后长时间没有反应，请通过<a target="_blank" href="https://www.truescan.net/tx">TrueScan</a>确认交易状态，谨慎<a @click="refreshCreateButton" href="javascript: void 0">强制刷新</a></div>
     </div>
+    <div v-else class="trace-notice">该账号无权限创建商品，如有疑问请联系该合约管理员</div>
   </div>
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 import Notice from '@/components/Notice'
 
 export default {
@@ -52,8 +57,15 @@ export default {
   },
   computed: {
     ...mapState({
+      permissions: state => state.web3.permissions,
       abi: state => state.web3.abi
-    })
+    }),
+    ...mapGetters({
+      address: 'web3/address'
+    }),
+    permissive () {
+      return !!this.permissions[this.address]
+    }
   },
   mounted () {
     this.queryCreateCargoes()
@@ -65,10 +77,10 @@ export default {
   },
   methods: {
     ...mapActions({
-      'notice': 'notice',
-      'allCreated': 'web3/allCreated',
-      'allHolding': 'web3/allHolding',
-      'createNewCargo': 'web3/createNewCargo'
+      notice: 'notice',
+      allCreated: 'web3/allCreated',
+      allHolding: 'web3/allHolding',
+      createNewCargo: 'web3/createNewCargo'
     }),
     queryCreateCargoes () {
       this.allCreated().then(res => {
@@ -120,9 +132,9 @@ export default {
   display grid
   grid-template-columns repeat(4, 1fr)
   grid-gap 4px
-  margin 10px 0 20px
+  margin-top 10px
 .trace-cargoes-notice
-  margin 10px 0 20px
+  margin-top 10px
   text-align center
   font-size 14px
   color #666
@@ -176,7 +188,7 @@ export default {
       background-repeat no-repeat
       background-image url('../assets/path.svg')
 .trace-create
-  margin 10px 0 20px
+  margin-top 10px
   >div:first-child
     display flex
   .trace-button

@@ -88,6 +88,20 @@
   "stateMutability": "view",
   "type": "function"
 }, {
+  "constant": true,
+  "inputs": [{
+    "name": "_user",
+    "type": "address"
+  }],
+  "name": "permissionOf",
+  "outputs": [{
+    "name": "",
+    "type": "bool"
+  }],
+  "payable": false,
+  "stateMutability": "view",
+  "type": "function"
+}, {
   "constant": false,
   "inputs": [{
     "name": "_cargoID",

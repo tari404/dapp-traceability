@@ -2,7 +2,7 @@ import Web3 from 'web3'
 
 import ABI from './ABI.json'
 
-const contractAddress = '0xdB587ef6aaA16b5719CDd3AaB316F0E70473e9Be'
+const contractAddress = '0x3423B8c21222AaC7bCFAa3B330e651F74E0D6188'
 
 const web3 = new Web3('https://api.truescan.net/rpc')
 const contract = new web3.eth.Contract(ABI, contractAddress)
@@ -10,7 +10,7 @@ window.contract = contract
 class Cargo {
   constructor (id) {
     this.id = id
-    this.name = '...'
+    this.name = ''
     this.traces = []
     this.updated = false
     contract.methods.cargoNameOf(this.id).call().then(name => {
@@ -47,10 +47,14 @@ const defaultUser = [
   { priKey: '0x03', address: '0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69' },
   { priKey: '0x04', address: '0x1efF47bc3a10a45D4B230B5d10E37751FE6AA718' }
 ]
-
+const permissions = {}
 defaultUser.forEach(account => {
   const ac = web3.eth.accounts.privateKeyToAccount(account.priKey)
   web3.eth.accounts.wallet.add(ac)
+  permissions[account.address] = false
+  contract.methods.permissionOf(account.address).call().then(res => {
+    permissions[account.address] = res
+  })
 })
 
 export default {
@@ -62,6 +66,8 @@ export default {
 
     state: 0,
     name: '...',
+    permissions,
+    permissionsUpdated: new Date(),
 
     userIndex: 0,
     contractAddress
@@ -80,9 +86,6 @@ export default {
         state.name = '...'
         state.state = 2
       }
-    },
-    updateUser (state, index) {
-      state.userIndex = index
     }
   },
   actions: {
@@ -96,10 +99,21 @@ export default {
         }, 3000)
       })
     },
+    updatePermission ({ state }, address) {
+      contract.methods.permissionOf(address).call().then(res => {
+        console.log(res)
+        state.permissions[address] = res
+      })
+    },
+    updateUser ({ state, dispatch }, index) {
+      state.userIndex = index
+      const address = defaultUser[index].address
+      dispatch('updatePermission', address)
+    },
     getCargo (_, id) {
       return findOrCreateCargoInfo(id)
     },
-    allCreated ({ state, dispatch }, address) {
+    async allCreated ({ state, dispatch }, address) {
       address = address || defaultUser[state.userIndex].address
       return contract.methods.allCreated(address).call().then(res => {
         return res.map(id => {
@@ -109,7 +123,7 @@ export default {
         dispatch('checkNetwork')
       })
     },
-    allHolding ({ state, dispatch }, address) {
+    async allHolding ({ state, dispatch }, address) {
       address = address || defaultUser[state.userIndex].address
       return contract.methods.allHolding(address).call().then(res => {
         return res.map(id => {
@@ -119,7 +133,7 @@ export default {
         dispatch('checkNetwork')
       })
     },
-    createNewCargo ({ state, dispatch }, name) {
+    async createNewCargo ({ state, dispatch }, name) {
       name = name || 'UNNAMED'
       const address = defaultUser[state.userIndex].address
       return contract.methods.createNewCargo(name).send({
@@ -131,12 +145,26 @@ export default {
         return err
       })
     },
-    transfer ({ state, dispatch }, [id, target]) {
+    async transfer ({ state, dispatch }, [id, target]) {
       const address = defaultUser[state.userIndex].address
       return contract.methods.transfer(id, target).send({
         from: address,
         gasPrice: 1,
         gas: 3000000
+      }).catch(err => {
+        dispatch('checkNetwork')
+        return err
+      })
+    },
+    async setPermission ({ state, dispatch }, [target, permissive]) {
+      const address = defaultUser[state.userIndex].address
+      return contract.methods.setPermission(target, permissive).send({
+        from: address,
+        gasPrice: 1,
+        gas: 3000000
+      }).then(res => {
+        dispatch('updatePermission', target)
+        return res
       }).catch(err => {
         dispatch('checkNetwork')
         return err

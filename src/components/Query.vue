@@ -9,6 +9,7 @@
       </div>
     </div>
     <div v-if="focusCargo">
+      <br class="trace-blank">
       <div class="trace-no-cargo" v-if="notExist">商品不存在</div>
       <div class="trace-cargo-details" v-else>
         <p><span class="key">商品名称</span>{{focusCargo.name}}</p>
@@ -24,6 +25,7 @@
             {{node}}
           </li>
         </ul>
+        <br class="trace-blank">
         <div class="trace-content-title">转移</div>
         <div v-if="address === holder" class="trace-transfer">
           <div>
@@ -64,7 +66,7 @@ export default {
       utils: state => state.web3.utils
     }),
     ...mapGetters({
-      'address': 'web3/address'
+      address: 'web3/address'
     }),
     tracesLength () {
       if (this.focusCargo) {
@@ -83,7 +85,7 @@ export default {
     },
     notExist () {
       if (this.focusCargo) {
-        return !this.focusCargo.name && this.focusCargo.traces[0] === zeroAddress
+        return !this.focusCargo.name && (this.focusCargo.traces[0] === zeroAddress || !this.focusCargo.traces[0])
       } else {
         return false
       }
@@ -91,9 +93,9 @@ export default {
   },
   methods: {
     ...mapActions({
-      'notice': 'notice',
-      'getCargo': 'web3/getCargo',
-      'transfer': 'web3/transfer'
+      notice: 'notice',
+      getCargo: 'web3/getCargo',
+      transfer: 'web3/transfer'
     }),
     queryCargo (inputID) {
       if (!inputID || /\D/.test(inputID)) {
@@ -121,7 +123,7 @@ export default {
           this.inputTarget = ''
           this.notice(['log', `商品：${cargo.name}已转移至账户：${target}`, 10000])
         } else if (/reverted by the EVM/.test(res.message)) {
-          this.notice(['error', `未能成功转移商品 输入参数可能有错误`, 10000])
+          this.notice(['error', `未能成功转移商品 输入参数可能有错误或无权操作`, 10000])
         } else {
           this.notice(['error', `未能成功转移商品 可能是由于网络等原因导致的`, 10000])
         }
@@ -135,7 +137,7 @@ export default {
 .trace-content
   margin-bottom 160px
 .trace-query-input
-  margin 10px 0 20px
+  margin-top 10px
   display flex
   #input-cargo-name
     flex 1 1 auto
@@ -162,7 +164,7 @@ export default {
     text-align right
     font-size 12px
 .trace-cargo-traces
-  margin 10px auto 20px
+  margin-top 10px
   background-color #f0f0f0
   padding 10px
   border-radius 5px
@@ -191,7 +193,7 @@ export default {
     &:after
       content none
 .trace-transfer
-  margin 10px 0 10px
+  margin-top 10px
   >div
     display flex
   .trace-button
