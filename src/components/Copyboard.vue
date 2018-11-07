@@ -1,12 +1,16 @@
 <template>
-  <div id="copy-board">
-    <p>复制地址 <span>{{state}}</span></p>
-    <ul>
-      <li :class="{ 'clicked': clicked === 0 }">管理员</li>
-      <li :class="{ 'clicked': clicked === 1 }">普通1</li>
-      <li :class="{ 'clicked': clicked === 2 }">普通2</li>
-      <li :class="{ 'clicked': clicked === 3 }">普通3</li>
-    </ul>
+  <div class="copy-box">
+    <div class="main-width">
+      <div id="copy-board">
+        <p>复制地址 <span>{{state}}</span></p>
+        <ul>
+          <li :class="{ 'clicked': clicked === 0 }">管理员</li>
+          <li :class="{ 'clicked': clicked === 1 }">普通1</li>
+          <li :class="{ 'clicked': clicked === 2 }">普通2</li>
+          <li :class="{ 'clicked': clicked === 3 }">普通3</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -43,7 +47,7 @@ export default {
         clearTimeout(this.sto)
         this.sto = setTimeout(() => {
           this.state = ''
-        }, 2400)
+        }, 2000)
       })
       clipboard.on('error', () => {
         this.state = '失败'
@@ -58,15 +62,19 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-#copy-board
+.copy-box
   position fixed
+  display flex
+  width 100%
   bottom 0
   left 0
+#copy-board
+  display inline-block
   font-size 12px
 p
   margin 0
   padding 1px 6px
-  border-top-right-radius 5px
+  border-radius 5px 5px 0 0
   color #fff
   background-color #0d85da80
 ul
@@ -76,7 +84,7 @@ li
   cursor pointer
   background-color #fff
   color #0006
-  transition color .4s, background-color 2.4s
+  transition color .4s, background-color 2s
   &:hover
     color #000a
 .clicked

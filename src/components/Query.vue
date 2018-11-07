@@ -198,10 +198,16 @@ export default {
       position absolute
       right 334px
     &:after
-      content '⬇️'
+      content ''
       position absolute
-      top -20px
+      width 14px
+      height 14px
+      top -17px
       left 50%
+      background-size contain
+      background-position center
+      background-repeat no-repeat
+      background-image url(../assets/arrow_down.svg)
       transform translateX(-50%)
   li:first-child
     margin-top 0
