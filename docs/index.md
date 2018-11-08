@@ -51,7 +51,7 @@ DApp是去中心化应用（Decentralized Applications）的简称。相比于�
 * 拥有某一商品的用户有权限将改商品转移给另一非零用户，商品的拥有者和转移权同时变更，而创建者身份不变，同时这次转移会记录；
 * 任何人可以查询特定商品的名称、交易转移记录、以及其创建者、当前拥有者。
 
-### 智能合约设计
+### 智能合约设计
 
 智能合约主要使用solidity语言开发，如果对于其使用还不熟悉的可以参考其[官方文档](https://solidity.readthedocs.io)，或者先从最简单的ERC20合约例子去理解其语言的使用。
 
@@ -130,7 +130,7 @@ emit Transfer(_cargoID, holder, _to);
 
 调用区块链上的合约有多中途径，对于本身就拥有全节点的开发者或者其团队尤其有更多选择。本Demo的用户界面主要在开发最简单的Web环境下运行，可以直接通过web3.js的JavaScript库（为了和TrueChain网络交互，使用了官方提供的拓展版[web3.js](https://github.com/truechain/web3.js)）来和节点进行交互。对于DApp的初期开发者，我们也推荐使用Web平台作为用户界面的第一个开发平台，丰富的资源和较高的可拓展性可以大大减少初期开发的成本。
 
-在Web端，主要实现了商品创建、商品转移、管理员管理商品创建权限的图形界面。当用户登录时，自动去调用合约的接口获取相应的展示信息。当用户调用相应的功能时，只要在输入相应的参数后点击按钮，脚本会自动构造交易、签名、发送，并且监听处理交易的执行结果，然后在屏幕上反馈给用户。
+在Web端，主要实现了商品创建、商品转移、管理员管理商品创建权限的图形界面。当用户登录时，自动去调用合约的接口获取相应的展示信息。当用户调用相应的功能时，只要在输入相应的参数后点击按钮，脚本会自动构造交易、签名、发送，并且监听处理交易的执行结果，然后在屏幕上反馈给用户。
 
 ![前端界面](./assets/front-end.png)
 
@@ -146,7 +146,7 @@ const web3 = new Web3('https://api.truescan.net/rpc')
 ```js
 const contract = new web3.eth.Contract(ABI, contractAddress)
 ```
-实例化的合约对象拥有`methods`属性，其中包括了通过ABI配置解析出的所有可以调用的合约接口。值得一提的是，同一个合约接口在`methods`对象中一般有三种表示形式，分别是接口名、带参数类型的接口方法、接口签名：
+实例化的合约对象拥有`methods`属性，其中包括了通过ABI配置解析出的所有可以调用的合约接口。值得一提的是，同一个合约接口在`methods`对象中一般有三种表示形式，分别是接口名、带参数类型的接口方法、接口签名：
 ```js
 const f1 = contract.methods.createNewCargo
 const f2 = contract.methods['createNewCargo(string)']
@@ -164,7 +164,7 @@ f1 === f2 && f1 === f3 // true
 * `call() Promise<any>`方法返回异步获取的请求对应接口的返回值，`call()`方法只能用于智能合约中修饰符为`view`、`pure`或者（已不推荐使用的）`constant`的接口。这些接口的调用不会产生任何链上数据状态（state）的改变，也就是通常意义上求接口；
 * `send(Txconfig) Promise<TransactionReceipt>`方法是接口的实际调用方法，对于`call()`方法不能调用的所有非静态方法，均需要使用`send()`方法调用。调用时需要传入交易发起地址`from`、交易的gas limit设置`gas`及交易的gas单价`gasPrice`。另外交易的`nonce`字段的值会自动根据`from`地址获取，交易的`input`及`to`字段`Contract`对象会自动补充。
 
-以商品名称获取和创建新商品为例：
+以商品名称获取和创建新商品为例：
 ```js
 const getCargoName = id => 
   contract.methods.cargoNameOf(id)

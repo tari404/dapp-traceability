@@ -1,21 +1,11 @@
-# ERC20-token-helper
+# 商品溯源 Cargoes Traceability DApp Demo
 
-## Project setup
+## 部署 Project setup
 ```
 npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
 npm run build
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
+## 文档 Document
+
+[中文文档](./docs/index.md)
