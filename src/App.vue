@@ -139,6 +139,7 @@ body
   margin 0
   background-color #f0f4f8
   font-family Avenir,Helvetica,Arial,sans-serif
+  -webkit-text-size-adjust none
 body::-webkit-scrollbar
   display none
   width 0
