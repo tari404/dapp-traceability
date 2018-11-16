@@ -4,7 +4,7 @@ import ABI from './ABI.json'
 
 const contractAddress = '0x3423B8c21222AaC7bCFAa3B330e651F74E0D6188'
 
-const web3 = new Web3('https://api.truescan.net/rpc')
+const web3 = new Web3('https://rpc.truedapp.net')
 const contract = new web3.eth.Contract(ABI, contractAddress)
 
 class Cargo {
