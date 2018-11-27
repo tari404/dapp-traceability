@@ -1,11 +1,11 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 
 contract Traces {
     string public constant name = "Test Trace App";
     string public constant symbol = "TTA";
     uint256 private _capacity = 0;
     address private _founder;
-    mapping (address => bool) private _authorization;
+    mapping (address => uint8) private _authorization;
     mapping (uint256 => string) private _cargoesName;
     mapping (address => mapping (uint256 => uint256)) private _cargoes;
     mapping (address => uint256) private _cargoesCount;
@@ -21,34 +21,34 @@ contract Traces {
 
     constructor () public {
         _founder = msg.sender;
-        _authorization[msg.sender] = true;
+        _authorization[msg.sender] = 2;
     }
 
     function capacity () public view returns (uint256) { return _capacity; }
     function capacityOf (address _owner) public view returns (uint256) { return _cargoesCount[_owner]; }
-    function cargoNameOf (uint256 _cargoID) public view returns (string) { return _cargoesName[_cargoID]; }
-    function permissionOf (address _user) public view returns (bool) { return _authorization[_user]; }
+    function cargoNameOf (uint256 _cargoID) public view returns (string memory) { return _cargoesName[_cargoID]; }
+    function permissionOf (address _user) public view returns (uint8) { return _authorization[_user]; }
     function transferTimesOf (uint256 _cargoID) public view returns (uint256) {
         return _transferTimes[_cargoID];
     }
     function holderOf (uint256 _cargoID) public view returns (address) {
         return _logs[_cargoID][_transferTimes[_cargoID]];
     }
-    function tracesOf (uint256 _cargoID) public view returns (address[] traces) {
+    function tracesOf (uint256 _cargoID) public view returns (address[] memory traces) {
         uint256 transferTime = _transferTimes[_cargoID];
         traces = new address[](transferTime + 1);
         for (uint256 i = 0; i <= transferTime; i++) {
             traces[i] = _logs[_cargoID][i];
         }
     }
-    function allCreated (address _creater) public view returns (uint256[] cargoes) {
+    function allCreated (address _creater) public view returns (uint256[] memory cargoes) {
         uint256 count = _cargoesCount[_creater];
         cargoes = new uint256[](count);
         for (uint256 i = 0; i < count; i++) {
             cargoes[i] = _cargoes[_creater][i];
         }
     }
-    function allHolding (address _owner) public view returns (uint256[] cargoes) {
+    function allHolding (address _owner) public view returns (uint256[] memory cargoes) {
         uint256 count = _holdCargoesCount[_owner];
         cargoes = new uint256[](count);
         for (uint256 i = 0; i < count; i++) {
@@ -56,9 +56,9 @@ contract Traces {
         }
     }
 
-    function createNewCargo (string _cargoName) public returns (uint256 cargoID) {
-        bool authorization = _authorization[msg.sender];
-        require(authorization, "Unauthorized");
+    function createNewCargo (string memory _cargoName) public returns (uint256 cargoID) {
+        uint8 authorization = _authorization[msg.sender];
+        require(authorization > 1, "Unauthorized");
         uint256 count = _cargoesCount[msg.sender];
         require(count + 1 > count, "Personal storage capacity reaches the upper limit");
         require(_capacity + 1 > _capacity, "Total storage capacity reaches the upper limit");
@@ -73,11 +73,17 @@ contract Traces {
     }
 
     function setPermission (address _address, bool _state) public {
-        _authorization[_address] = _state;
+        if (_state) {
+            _authorization[_address] = 1;
+        } else {
+            _authorization[_address] = 0;
+        }
         emit Authorize(_address, _state);
     }
 
     function transfer (uint256 _cargoID, address _to) public returns (bool success) {
+        uint8 authorization = _authorization[msg.sender];
+        require(authorization > 0, "Unauthorized");
         uint256 transferTime = _transferTimes[_cargoID];
         address holder = _logs[_cargoID][transferTime];
         require(holder != address(0), "Nonexistent cargo");

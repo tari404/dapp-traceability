@@ -1,58 +1,71 @@
 <template>
-  <div class="main-width trace-content">
-    <div class="trace-content-title">我创建的商品</div>
-    <div class="trace-cargoes-notice" v-if="cCNLoaded === 1">加载中...</div>
-    <div class="trace-cargoes-notice" v-else-if="cCNLoaded === 2 && !createCargoesNames.length">没有对应记录</div>
-    <ul class="trace-cargoes" v-else>
-      <li class="trace-cargo" v-for="(cargo, index) in createCargoesNames" :key="index">
-        <span class="detials" @click="cargoDetails(cargo)"></span>
-        <span class="name">{{cargo.name}}</span>
-        <span class="traces">{{cargo.traces.length - 1}}</span>
-      </li>
-    </ul>
-    <br class="trace-blank">
-    <div class="trace-content-title">我拥有的商品</div>
-    <div class="trace-cargoes-notice" v-if="hCNLoaded === 1">加载中...</div>
-    <div class="trace-cargoes-notice" v-else-if="hCNLoaded === 2 && !holdCargoesNames.length">没有对应记录</div>
-    <ul class="trace-cargoes" v-else>
-      <li class="trace-cargo" v-for="(cargo, index) in holdCargoesNames" :key="index">
-        <span class="detials" @click="cargoDetails(cargo)"></span>
-        <span class="name">{{cargo.name}}</span>
-        <span class="traces">{{cargo.traces.length - 1}}</span>
-      </li>
-    </ul>
-    <br class="trace-blank">
-    <div class="trace-content-title">创建新商品</div>
-    <div v-if="permissive">
-      <div class="trace-create">
-        <div>
-          <label for="input-cargo-name">商品名称</label>
-          <input id="input-cargo-name" type="text" v-model="inputName" :disabled="creationState" >
-          <div class="trace-button" :class="{ 'trace-button-active': inputName && !creationState }">
-            <div class="need-to-pay" @click="createCargo">{{creationState ? '创建中...' : '创建'}}</div>
-          </div>
-        </div>
-        <div class="trace-notice">如果点击创建后长时间没有反应，请通过<a target="_blank" href="https://www.truescan.net/tx">TrueScan</a>确认交易状态，谨慎<a @click="refreshCreateButton" href="javascript: void 0">强制刷新</a></div>
+  <div class="main-width">
+    <div class="trace-content trace-account">
+      <h2>{{$t('Account.current')}}</h2>
+      <div>
+        <img :src="user.img">
+        <span>{{$t(`Account.player[${user.index}]`)}}</span>
+      </div>
+      <p>{{$t('Account.address')}} {{address}}</p>
+    </div>
+    <div class="main-width trace-content">
+      <h2 class="trace-content-title">{{$t('cargolist')}}</h2>
+      <div class="trace-create-new" @click="startCreateCargo">{{$t('newcargo')}}</div>
+      <div class="trace-cargoes-notice" v-if="hCNLoaded === 1">加载中...</div>
+      <div class="trace-cargoes-notice" v-else-if="hCNLoaded === 2 && !holdCargoesNames.length">没有对应记录</div>
+      <ul class="trace-cargoes" v-else>
+        <li class="trace-cargo" v-for="(cargo, index) in holdCargoesNames" :key="index" @click="cargoDetails(cargo)">
+          <img :src="cargoImg">
+          <span class="name">{{cargo.name}}</span>
+          <span class="traces">{{cargo.traces.length ? cargo.traces.length - 1 : '...'}}</span>
+        </li>
+      </ul>
+      <br class="trace-blank">
+      <h2 class="trace-content-title">{{$t('cargoquery')}}</h2>
+      <div class="trace-query">
+        <input id="input-cargo-name" type="text" v-model="inputCargoID" :disabled="creationState" >
+        <div class="trace-query-notice" v-if="!inputCargoID">输入商品ID</div>
+        <div class="trace-button" :class="{
+          'trace-button-active': inputCargoID && !/\D/.test(inputCargoID)
+        }" @click="queryCargo" >查询</div>
       </div>
     </div>
-    <div v-else class="trace-notice">该账号无权限创建商品，如有疑问请联系该合约管理员</div>
+    <div v-if="showModalBox" class="trace-modal">
+      <div class="main">
+        <div class="close" @click="closeModal">
+          <span/>
+          <span/>
+        </div>
+        <div class="trace-main-info">
+          <h2>创建商品</h2>
+          <input type="text" v-model="inputName">
+          <div class="notice" v-if="!inputName">输入商品名称</div>
+          <div class="button" :class="{
+            'button-active': inputName && !creationState
+          }" @click="createCargo">确定创建</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
-import Notice from '@/components/Notice'
+
+import cargoImg from '@/assets/cargo.png'
 
 export default {
   name: 'Cargoes',
   data () {
     return {
+      cargoImg,
+
       inputName: '',
+      inputCargoID: '',
       creationState: false,
-      cCNLoaded: 0,
-      createCargoesNames: [],
       hCNLoaded: 0,
       holdCargoesNames: [],
+      showModalBox: false
     }
   },
   computed: {
@@ -61,33 +74,22 @@ export default {
       abi: state => state.web3.abi
     }),
     ...mapGetters({
+      user: 'user',
       address: 'web3/address'
-    }),
-    permissive () {
-      return !!this.permissions[this.address]
-    }
+    })
   },
   mounted () {
-    this.queryCreateCargoes()
     this.queryHoldCargoes()
     setTimeout(() => {
-      this.cCNLoaded = this.cCNLoaded || 1
       this.hCNLoaded = this.hCNLoaded || 1
     }, 300)
   },
   methods: {
     ...mapActions({
       notice: 'notice',
-      allCreated: 'web3/allCreated',
       allHolding: 'web3/allHolding',
       createNewCargo: 'web3/createNewCargo'
     }),
-    queryCreateCargoes () {
-      this.allCreated().then(res => {
-        this.createCargoesNames = res
-        this.cCNLoaded = 2
-      })
-    },
     queryHoldCargoes () {
       this.allHolding().then(res => {
         this.holdCargoesNames = res
@@ -97,8 +99,17 @@ export default {
     cargoDetails (cargo) {
       this.$emit('queryDetails', cargo)
     },
-    refreshCreateButton () {
-      this.creationState = false
+    queryCargo () {
+      const id = this.inputCargoID
+      if (id && !/\D/.test(id)) {
+        this.$emit('queryDetails', { id: this.inputCargoID})
+      }
+    },
+    startCreateCargo () {
+      this.showModalBox = true
+    },
+    closeModal () {
+      this.showModalBox = false
     },
     createCargo () {
       if (!this.inputName || this.creationState) {
@@ -110,7 +121,6 @@ export default {
         this.creationState = false
         if (res.events) {
           const id = res.events.NewCargo.returnValues._cargoID
-          this.queryCreateCargoes()
           this.queryHoldCargoes()
           this.notice(['log', `商品记录创建成功 名称：${name}<br>ID：${id}`, 10000])
           this.inputName = ''
@@ -126,76 +136,146 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.trace-content
-  margin-bottom 160px
+.main-width
+  margin-bottom 100px
+h2
+  margin 0 0 20px
+  font-weight 500
+  font-size 20px
+  line-height 20px
+
+.trace-account
+  font-size 18px
+  color #333
+  div
+    margin 30px 0
+    display flex
+  img
+    width 40px
+    height 40px
+    border-radius 20px
+    margin-right 20px
+  span
+    line-height 40px
+  p
+    margin 0
+    line-height 20px
+
+.trace-create-new
+  position absolute
+  top 30px
+  right 30px
+  width 150px
+  height 40px
+  box-sizing border-box
+  border-radius 20px
+  color #fff
+  background-color #1E64B4
+  opacity .8
+  line-height 40px
+  text-align center
+  cursor pointer
+  transition opacity .4s
+  &:hover
+    opacity 1
+
 .trace-cargoes
   display grid
   grid-template-columns repeat(4, 1fr)
-  grid-gap 4px
-  margin-top 10px
+  grid-gap 40px
+  margin 40px 0
 .trace-cargoes-notice
-  margin-top 10px
   text-align center
-  font-size 14px
+  margin 40px 0
+  border solid 1px #dfdfdf
+  border-radius 10px
+  line-height 100px
+  font-size 18px
   color #666
-  border solid 1px #ddd
-  border-radius 3px
-  padding 10px
-  line-height 24px
 .trace-cargo
-  border solid 1px #ddd
-  border-radius 3px
-  padding 10px 10px 10px 12px
-  line-height 24px
+  cursor pointer
+  height 104px
+  border solid 1px #bfbfbf
+  box-shadow 0 6px 20px rgba(0, 0, 0, 0.1)
+  border-radius 10px
+  padding 15px 11px
+  align-items center
+  box-sizing border-box
   position relative
-  overflow hidden
-  .detials
-    position absolute
-    right -3px
-    bottom  -8px
-    transform rotate(45deg)
-    width 10px
-    height 20px
-    background-color #0d85da
-    display block
-    cursor pointer
-    opacity .6
-    transition opacity .3s
-    &:hover
-      opacity 1
+  display flex
+  img
+    width 60px
+    height 60px
+    border-radius 50%
+    margin 6px 10px
   .name
-    display inline-block
     white-space nowrap
     overflow hidden
-    vertical-align bottom
-    width 120px
+    width 100px
+    margin 0 10px
+    font-size 18px
+    color #666
     text-overflow ellipsis
   .traces
+    position absolute
+    right 16px
+    bottom 14px
+    line-height 14px
     font-size 14px
-    float right
-    position relative
-    color #0387dc
+    color #1E64B4
     &:before
       content ''
       display block
       position absolute
-      top 5px
+      top 0
       left -18px
       width 14px
       height 14px
       background-size contain
       background-repeat no-repeat
       background-image url('../assets/path.svg')
-.trace-create
-  margin-top 10px
-  >div:first-child
-    display flex
+.trace-query
+  display flex
+  margin-top 40px
+  position relative
+  input
+    flex 0 1 500px
+    height 60px
+    border 1px solid #bfbfbf
+    border-radius 10px
+    font-size 18px
+    padding 10px 20px
+    position relative
+    background transparent
+    z-index 1
+  .trace-query-notice
+    position absolute
+    left 22px
+    line-height 62px
+    color #999
+    font-size 18px
+    z-index 0
   .trace-button
-    margin-left 20px
-@media screen and (max-width 800px)
+    width 150px
+    height 60px
+    background-color #bfbfbf
+    border-radius 10px
+    line-height 60px
+    text-align center
+    font-size 18px
+    color #fff
+    margin-left 10px
+    transition background-color .4s
+  .trace-button-active
+    background-color #1e64b4
+
+@media screen and (max-width: 1100px)
   .trace-cargoes
     grid-template-columns repeat(3, 1fr)
-@media screen and (max-width 600px)
+@media screen and (max-width: 900px)
   .trace-cargoes
     grid-template-columns repeat(2, 1fr)
+@media screen and (max-width: 560px)
+  .trace-cargoes
+    grid-template-columns repeat(1, 1fr)
 </style>

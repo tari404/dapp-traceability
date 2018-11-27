@@ -2,96 +2,84 @@
   <div id="app">
     <nav>
       <div class="main-width">
-        <h1>商品溯源平台</h1>
-        <div class="trace-user">
-          使用<span :class="{'focus': admin}" @click="toggleUser(true, 0)">管理员</span>
-          <span :class="{'focus': !admin && userIndex === 1}" @click="toggleUser(false, 1)">普通1</span>
-          <span :class="{'focus': !admin && userIndex === 2}" @click="toggleUser(false, 2)">普通2</span>
-          <span :class="{'focus': !admin && userIndex === 3}" @click="toggleUser(false, 3)">普通3</span>账号
+        <h1>{{$t('title')}}</h1>
+        <div class="trace-i18n">
+          <span :class="{ 'focus': $i18n.locale === 'sc' }"
+            @click="toggleLang('sc')">简体中文</span>
+          <span :class="{ 'focus': $i18n.locale === 'en' }"
+            @click="toggleLang('en')">English</span>
         </div>
       </div>
     </nav>
-    <section>
-      <div class="main-width trace-account">
-        账户地址：{{address}}
+    <section v-if="beforeEnter">
+      <div class="trace-intro trace-content main-width">
+        <p>{{$t('intro')}}<br>{{$t('introduction')}}</p>
+        <p>
+          {{$t('characterintro')}}
+          <br>
+          {{$t('characters[0]')}}
+          <br>
+          {{$t('characters[1]')}}
+          <br>
+          {{$t('characters[2]')}}
+        </p>
+        <div class="trace-intro-start" @click="start">{{$t('start')}}</div>
       </div>
     </section>
-    <section>
-      <div class="main-width">
-        <span class="trace-network-name">合约名称：{{contractName}}</span>
-        <span class="trace-network-state" :style="{
-          'color': networkState === 1 ? '#2fa4d9' : '#d80315'
-        }">{{networkNotice}}</span>
+    <section v-else-if="beforeLogin">
+      <div class="trace-login trace-content main-width">
+        <h2>{{$t('login')}}</h2>
+        <p>{{$t('Account.select')}}</p>
+        <div class="trace-login-select" :class="{
+          'trace-login-select-open': showOptions
+        }" @click="clickSelector">
+          <ul class="trace-login-options" :style="{
+            'transform': `translateY(${-selected * 80}px)`
+          }">
+            <li v-for="(user, index) in defaultUsers" :key="index"
+              @click="selectOption($event, index)">
+              <img :src="user.img">
+              <span>{{$t(`Account.player[${user.index}]`)}}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="trace-login-start" @click="login">{{$t('login')}}</div>
       </div>
     </section>
-    <section>
-      <div class="main-width">
-        <ul class="trace-menu">
-          <li v-for="(item, index) in menu"
-            :key="'m'+index"
-            :class="{ 'focus': route === 'm'+index }"
-            @click="toggleRoute('m'+index)">{{item}}</li>
-          <li v-if="admin" v-for="(item, index) in adminMenu"
-            :key="'a'+index"
-            :class="{ 'focus': route === 'a'+index }"
-            @click="toggleRoute('a'+index)">{{item}}</li>
-        </ul>
-      </div>
-    </section>
-    <section v-if="!beforeRefresh">
-      <cargoes v-show="route === 'm0'" @queryDetails="showDetails" />
-      <query v-show="route === 'm1'" ref="query" />
-      <manage v-show="route === 'a0'" />
+    <section v-else-if="!beforeRefresh">
+      <cargoes v-if="route === 'info'" @queryDetails="showDetails" />
+      <query v-if="route === 'query'" :cargoID='focusCargoID' />
     </section>
     <notice />
-    <copyboard />
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex'
 import Notice from '@/components/Notice'
-import Copyboard from '@/components/Copyboard'
 import Cargoes from '@/components/Cargoes'
 import Query from '@/components/Query'
-import Manage from '@/components/Manage'
 
 export default {
   name: 'App',
   data () {
     return {
+      beforeEnter: true,
+      beforeLogin: true,
       beforeRefresh: false,
-
-      admin: true,
       userIndex: 0,
-      route: 'm0',
-      menu: [
-        '商品查看',
-        '查询管理'
-      ],
-      adminMenu: [
-        '权限管理'
-      ]
+
+      showOptions: false,
+      selected: 0,
+
+      route: 'info',
+      focusCargoID: 0
     }
   },
   computed: {
     ...mapState({
-      contractName: state => state.web3.name,
-      networkState: state => state.web3.state
-    }),
-    ...mapGetters({
-      address: 'web3/address'
-    }),
-    networkNotice () {
-      switch (this.networkState) {
-        case 1:
-          return '网络连接正常'
-        case 2:
-          return '网络连接异常'
-        default:
-          return ''
-      }
-    }
+      defaultUsers: state => state.defaultUsers
+    })
   },
   created () {
     this.checkNetwork()
@@ -101,35 +89,46 @@ export default {
       checkNetwork: 'web3/checkNetwork',
       updateUser: 'web3/updateUser'
     }),
+    toggleLang (locale) {
+      this.$i18n.locale = locale
+      document.title = this.$t('title')
+    },
+    start () {
+      this.beforeEnter = false
+    },
+    login () {
+      this.updateUser(this.selected)
+      this.beforeLogin = false
+    },
+    clickSelector (event) {
+      if (!this.showOptions) {
+        this.showOptions = true
+        event.stopPropagation()
+        document.addEventListener('click', this.closeSelector)
+      }
+    },
+    closeSelector () {
+      this.showOptions = false
+      document.removeEventListener('click', this.closeSelector)
+    },
+    selectOption (event, index) {
+      if (!this.showOptions) {
+        return
+      }
+      this.selected = index
+    },
     toggleRoute (index) {
       this.route = index
     },
-    toggleUser (isAdmin, index) {
-      if (this.admin === isAdmin && this.index === index) {
-        return
-      }
-      if (/a/.test(this.route) && isAdmin === false) {
-        this.route = 'm0'
-      }
-      this.beforeRefresh = true
-      this.$nextTick(() => {
-        this.beforeRefresh = false
-      })
-      this.admin = isAdmin
-      this.userIndex = index
-      this.updateUser(index)
-    },
     showDetails (cargo) {
-      this.route = 'm1'
-      this.$refs.query.queryCargo(cargo.id)
+      this.route = 'query'
+      this.focusCargoID = cargo.id
     }
   },
   components: {
     Notice,
-    Copyboard,
     Cargoes,
-    Query,
-    Manage
+    Query
   }
 }
 </script>
@@ -155,7 +154,7 @@ li
 
 .main-width
   margin auto
-  flex 0 1 800px
+  flex 0 1 1200px
   min-width 480px
   box-sizing border-box
 
@@ -163,33 +162,48 @@ li
   line-height 20px
 
 nav
-  height 80px
-  padding 0 10px
+  height 90px
+  padding 0 15px
   display flex
+  margin-bottom 60px
   background-color #fff
   box-shadow 0 2px 4px #0001
   h1
-    margin 0
-    display inline
+    color #333
     font-size 20px
-    font-weight 400
+    font-weight 600
     line-height 40px
-  .trace-user
-    margin 5px 0
-    float right
-    line-height 20px
+    text-align center
+  .main-width
+    position relative
+.trace-i18n
+  position absolute
+  top 50%
+  right 0
+  transform translateY(-50%)
+  padding 0 4px
+  font-size 14px
+  display flex
+  span
+    display block
+    line-height 30px
+    height 30px
+    border solid 1px #bfbfbf
+    box-sizing border-box
     color #666
-    span
-      display inline-block
-      padding 4px
-      margin 0 2px
-      border dashed 1px #ddd
-      border-radius 3px
-      cursor pointer
-    .focus
-      background-color #0d85da
-      border-color #0d85da
-      color #fff
+    cursor pointer
+  span:first-child
+    border-right none
+    padding 0 4px 0 8px
+    border-radius 15px 0 0 15px
+  span:last-child
+    border-left none
+    padding 0 8px 0 4px
+    border-radius 0 15px 15px 0
+  .focus
+    background-color #1e64b4
+    color #fff
+    border-color #1e64b4
 section
   margin 20px 10px
   display flex
@@ -211,20 +225,6 @@ input
   margin 0
   padding 0 9px
 
-.trace-account
-  padding 10px 20px
-  border-radius 5px
-  border dashed 1px #aaa
-  color #666
-
-.trace-network-name
-  font-size 16px
-  line-height 24px
-.trace-network-state
-  float right
-  font-size 14px
-  line-height 24px
-
 .trace-menu
   float left
   border-radius 5px
@@ -243,63 +243,192 @@ input
     color #fff
 .trace-content
   background-color #fff
-  border-radius 5px
+  border-radius 10px
   background-color #fff
-  padding 20px
+  padding 40px 30px
   box-shadow 0 2px 4px #0001
-.trace-content-title
-  font-size 18px
-  line-height 30px
+  margin-bottom 20px
   position relative
-  &:before
-    content ''
-    position absolute
-    top 8px
-    left -22px
-    width 0
-    height 0
-    border-left solid 6px #0d85da
-    border-top solid 6px transparent
-    border-bottom solid 6px transparent
 
 .trace-notice
   margin-top 4px
   font-size 12px
   color #666
 
-.trace-button
-  border-radius 3px
-  color #fff
-  width 150px
-  height 40px
-  text-align center
-  line-height 40px
-  background-color #ccc
-  transition background-color .4s
+.trace-intro
+  padding 20px 100px
+  p
+    font-size 18px
+    line-height 30px
+    color #666
+  .trace-intro-start
+    width 300px
+    height 60px
+    background #1E64B4
+    border-radius 10px
+    line-height 60px
+    text-align center
+    color #fff
+    font-size 18px
+    cursor pointer
+    margin 100px auto 80px
+
+.trace-login
+  flex 0 1 800px
+  margin auto
+  padding 20px 150px
+  h2
+    margin 60px auto
+    font-weight 400
+    text-align center
+    font-size 24px
+    line-height 30px
+    color #333
+  p
+    margin 20px 0
+    font-size 18px
+    line-height 20px
+    color #666
+  .trace-login-start
+    width 300px
+    height 60px
+    background #1E64B4
+    border-radius 10px
+    line-height 60px
+    text-align center
+    color #fff
+    font-size 18px
+    cursor pointer
+    margin 60px auto 80px
+
+.trace-login-select
+  cursor pointer
+  height 80px
+  border solid 1px #d2d2d2
+  border-radius 10px
+  overflow hidden
   position relative
-  div
-    border-radius 3px
-    transition background-color .4s,transform .4s
-    background-color #bbb
-  .need-to-pay:after
+  &:after
     content ''
     position absolute
-    top 5px
-    right 8px
-    width 26px
-    height 26px
-    background-image url(./assets/pay.svg)
-    background-size contain
-    background-position center
-    background-repeat no-repeat
-.trace-button-active
-  background-color #0072c1
-  div
-    background-color #0d85da
+    right 24px
+    top 35px
+    width 0
+    height 0
+    border-top solid 13px #bfbfbf
+    border-left solid 10px transparent
+    border-right solid 10px transparent
+    transition transform .4s, opacity .4s
+.trace-login-select-open
+  overflow visible
+  li:nth-child(even)
+    background-color #f9f9f9
+  &:after
+    transform scaleY(0)
+    opacity 0
+.trace-login-options
+  border solid 1px #d2d2d2
+  border-radius 10px
+  overflow hidden
+  position absolute
+  left -1px
+  top -1px
+  width 100%
+  transition transform .4s
+  li
+    height 80px
+    line-height 80px
+    display flex
+    background-color #fff
+  img
+    width 40px
+    height 40px
+    border-radius 20px
+    margin 20px 24px
+  span
+    font-size 18px
+    color #333
+
+.trace-modal
+  position fixed
+  top 0
+  left 0
+  background-color #0004
+  width 100%
+  height 100%
+  display flex
+  align-items center
+  z-index 10
+  .main
+    margin auto
+    padding 40px
+    box-sizing border-box
+    width 700px
+    background-color #fff
+    border-radius 10px
+    position relative
+  .close
+    position absolute
+    top -40px
+    right 0
+    width 30px
+    height 30px
+    box-sizing border-box
+    border-radius 15px
+    border solid 2px #fff
     cursor pointer
-    transform translateY(-6px)
-    &:hover
-      transform translateY(-3px)
+    span
+      position absolute
+      top 12px
+      left 3px
+      display block
+      height 2px
+      width 20px
+      background-color #fff
+      &:first-child
+        transform rotate(45deg)
+      &:last-child
+        transform rotate(-45deg)
+  h2
+    font-weight 400
+    text-align center
+    font-size 20px
+    color #333
+    margin-bottom 40px
+  input
+    display block
+    width 500px
+    height 60px
+    border 1px solid #d2d2d2
+    border-radius 10px
+    font-size 18px
+    margin auto
+    padding 10px 20px
+    position relative
+    background transparent
+    z-index 1
+  .notice
+    position absolute
+    left 121px
+    top 100px
+    line-height 62px
+    color #999
+    font-size 18px
+    z-index 0
+  .button
+    width 300px
+    height 60px
+    background #bfbfbf
+    border-radius 10px
+    line-height 60px
+    text-align center
+    color #fff
+    font-size 18px
+    cursor pointer
+    margin 60px auto 20px
+    transition background-color 0.4s
+  .button-active
+    background-color #1E64B4
 
 .trace-decimals
   font-size 14px

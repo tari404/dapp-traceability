@@ -5,11 +5,59 @@ import web3 from './web3'
 
 Vue.use(Vuex)
 
+const defaultUsers = [
+  {
+    index: 0,
+    name: '生产厂家',
+    img: require('@/assets/head/01.png'),
+    address: '0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf'
+  },
+  {
+    index: 1,
+    name: '代销商1',
+    img: require('@/assets/head/02.png'),
+    address: '0x2B5AD5c4795c026514f8317c7a215E218DcCD6cF'
+  },
+  {
+    index: 2,
+    name: '代销商2',
+    img: require('@/assets/head/03.png'),
+    address: '0x6813Eb9362372EEF6200f3b1dbC3f819671cBA69'
+  },
+  {
+    index: 3,
+    name: '消费者',
+    img: require('@/assets/head/04.png'),
+    address: '0x1efF47bc3a10a45D4B230B5d10E37751FE6AA718'
+  }
+]
+
+const cache = new Map()
+
 const state = {
+  defaultUsers,
   noticeBoxTimer: 0,
   noticeBox: null,
   noticeTextBox: null,
-  hold: false
+  hold: false,
+
+  userIndex: 0
+}
+
+const getters = {
+  user (state) {
+    return defaultUsers[state.userIndex]
+  },
+  userByAddress: _ => address => {
+    const fromCache = cache.get(address)
+    if (fromCache) {
+      return fromCache
+    } else {
+      const fromConfig = defaultUsers.find(item => item.address === address)
+      cache.set(address, fromConfig)
+      return fromConfig
+    }
+  }
 }
 
 const mutations = {
@@ -69,6 +117,7 @@ const actions = {
 
 export default new Vuex.Store({
   state,
+  getters,
   mutations,
   actions,
   modules: {
