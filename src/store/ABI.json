@@ -96,7 +96,7 @@
   "name": "permissionOf",
   "outputs": [{
     "name": "",
-    "type": "bool"
+    "type": "uint8"
   }],
   "payable": false,
   "stateMutability": "view",
@@ -140,7 +140,10 @@
   }],
   "name": "tracesOf",
   "outputs": [{
-    "name": "traces",
+    "name": "times",
+    "type": "uint256[]"
+  }, {
+    "name": "holders",
     "type": "address[]"
   }],
   "payable": false,

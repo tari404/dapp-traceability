@@ -2,7 +2,7 @@ import Web3 from 'web3'
 
 import ABI from './ABI.json'
 
-const contractAddress = '0x3423B8c21222AaC7bCFAa3B330e651F74E0D6188'
+const contractAddress = '0x296ff170a06b2500bE7111989f1CEF8282c1c485'
 
 const web3 = new Web3('https://rpc.truedapp.net')
 const contract = new web3.eth.Contract(ABI, contractAddress)
@@ -11,7 +11,10 @@ class Cargo {
   constructor (id) {
     this.id = id
     this.name = ''
-    this.traces = []
+    this.traces = [{
+      time: '...',
+      holder: '...'
+    }]
     this.updated = false
     contract.methods.cargoNameOf(this.id).call().then(name => {
       this.name = name
@@ -19,8 +22,13 @@ class Cargo {
     this.update()
   }
   update () {
-    contract.methods.tracesOf(this.id).call().then(traces => {
-      this.traces = traces
+    contract.methods.tracesOf(this.id).call().then(res => {
+      this.traces = res[0].map((timestamp, index) => {
+        return {
+          time: new Date(timestamp * 1000).toLocaleString().replace(/\//g, '-'),
+          holder: res[1][index]
+        }
+      })
       this.updated = new Date()
     }).catch(() => {
       this.updated = false
@@ -51,7 +59,7 @@ const permissions = {}
 defaultUser.forEach(account => {
   const ac = web3.eth.accounts.privateKeyToAccount(account.priKey)
   web3.eth.accounts.wallet.add(ac)
-  permissions[account.address] = false
+  permissions[account.address] = 0
   contract.methods.permissionOf(account.address).call().then(res => {
     permissions[account.address] = res
   })

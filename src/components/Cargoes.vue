@@ -10,9 +10,9 @@
     </div>
     <div class="main-width trace-content">
       <h2 class="trace-content-title">{{$t('cargolist')}}</h2>
-      <div class="trace-create-new" @click="startCreateCargo">{{$t('newcargo')}}</div>
-      <div class="trace-cargoes-notice" v-if="hCNLoaded === 1">加载中...</div>
-      <div class="trace-cargoes-notice" v-else-if="hCNLoaded === 2 && !holdCargoesNames.length">没有对应记录</div>
+      <div class="trace-create-new" v-if="permissions[address] > 1" @click="startCreateCargo">{{$t('newcargo')}}</div>
+      <div class="trace-cargoes-notice" v-if="hCNLoaded === 1">{{$t('loading')}}</div>
+      <div class="trace-cargoes-notice" v-else-if="hCNLoaded === 2 && !holdCargoesNames.length">{{$t('Cargoes.norecords')}}</div>
       <ul class="trace-cargoes" v-else>
         <li class="trace-cargo" v-for="(cargo, index) in holdCargoesNames" :key="index" @click="cargoDetails(cargo)">
           <img :src="cargoImg">
@@ -24,10 +24,10 @@
       <h2 class="trace-content-title">{{$t('cargoquery')}}</h2>
       <div class="trace-query">
         <input id="input-cargo-name" type="text" v-model="inputCargoID" :disabled="creationState" >
-        <div class="trace-query-notice" v-if="!inputCargoID">输入商品ID</div>
+        <div class="trace-query-notice" v-if="!inputCargoID">{{$t('Cargoes.input')}}</div>
         <div class="trace-button" :class="{
           'trace-button-active': inputCargoID && !/\D/.test(inputCargoID)
-        }" @click="queryCargo" >查询</div>
+        }" @click="queryCargo" >{{$t('Cargoes.query')}}</div>
       </div>
     </div>
     <div v-if="showModalBox" class="trace-modal">
@@ -37,12 +37,12 @@
           <span/>
         </div>
         <div class="trace-main-info">
-          <h2>创建商品</h2>
+          <h2>{{$t('newcargo')}}</h2>
           <input type="text" v-model="inputName">
-          <div class="notice" v-if="!inputName">输入商品名称</div>
+          <div class="notice" v-if="!inputName">{{$t('Cargoes.inputname')}}</div>
           <div class="button" :class="{
             'button-active': inputName && !creationState
-          }" @click="createCargo">确定创建</div>
+          }" @click="createCargo">{{creationState ? $t('creating') : $t('Cardoes.confirm')}}</div>
         </div>
       </div>
     </div>
@@ -122,12 +122,12 @@ export default {
         if (res.events) {
           const id = res.events.NewCargo.returnValues._cargoID
           this.queryHoldCargoes()
-          this.notice(['log', `商品记录创建成功 名称：${name}<br>ID：${id}`, 10000])
+          this.notice(['log', this.$t('Createnotice.success') + name + '<br>ID ' + id, 10000])
           this.inputName = ''
         } else if (/reverted by the EVM/.test(res.message)) {
-          this.notice(['error', `未能成功创建商品记录：${name} 请和管理员确认是否有操作权限`, 10000])
+          this.notice(['error', this.$t('Createnotice.error') + name + this.$t('Createnotice.unknow'), 10000])
         } else {
-          this.notice(['error', `未能成功创建商品记录：${name} 可能是由于网络等原因导致的`, 10000])
+          this.notice(['error', this.$t('Createnotice.error') + name + this.$t('Createnotice.neterror'), 10000])
         }
       })
     }

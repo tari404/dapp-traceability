@@ -5,7 +5,7 @@
   "characterintro": "本应用体验时分为三个角色，生产厂家、代销商、消费者，角色的权限分别是：",
   "characters": [
     "生产厂家：创建商品、销售商品、查询商品；",
-    "代销商1、代销商2：销售商品、查询商品；",
+    "代销商1：销售商品、查询商品；",
     "消费者：查询商品。"
   ],
   "start": "开始体验",
@@ -16,26 +16,47 @@
       "生产厂家",
       "代销商1",
       "代销商2",
-      "消费者"
+      "消费者",
+      "其他用户"
     ],
     "current": "当前账户",
     "address": "当前账户地址"
   },
   "loading": "加载中...",
   "processing": "处理中...",
+  "creating": "创建中...",
   "cargolist": "我拥有的商品",
   "cargoquery": "商品查询",
   "newcargo": "创建商品",
   "transcargo": "销售商品",
-  "Notice": {
-    "success": "操作成功",
-    "unknow": "操作失败 请尝试刷新页面并重试",
-    "neterror": "操作失败 可能是由于网络等原因导致的"
+  "Query": {
+    "title": "商品详情",
+    "nocargoes": "商品不存在",
+    "createtime": "创建时间",
+    "creater": "创建者",
+    "holder": "持有者",
+    "transcount": "流通次数",
+    "input": "输入销售地址",
+    "confirm": "确定销售"
   },
-  "Gamenotice": {
-    "join": "已加入游戏",
-    "wait": "需等待另一名玩家加入",
-    "error": "未能创建或参与新游戏 请检查是否已经有一个等待中的游戏",
-    "neterror": "未能创建或参与新游戏 可能是由于网络等原因导致的"
+  "Cargoes": {
+    "norecords": "没有对应记录",
+    "input": "输入商品ID",
+    "query": "查询",
+    "inputname": "输入商品名称",
+    "confirm": "确定创建"
+  },
+  "Notice": {
+    "cargo": "商品：",
+    "toaccount": "已转移至账户：",
+    "success": "操作成功",
+    "unknow": "未能成功转移商品 输入参数可能有错误或无权操作",
+    "neterror": "未能成功转移商品 可能是由于网络等原因导致的"
+  },
+  "Createnotice": {
+    "success": "商品记录创建成功，名称",
+    "error": "未能成功创建商品记录：",
+    "unknow": " 请和管理员确认是否有操作权限",
+    "neterror": " 可能是由于网络等原因导致的"
   }
 }

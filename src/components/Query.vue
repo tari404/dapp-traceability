@@ -1,34 +1,33 @@
 <template>
   <div class="main-width trace-content">
-    <h2>商品详情</h2>
-    <div class="trace-transfer" @click="startTransferCargo">{{$t('transcargo')}}</div>
-    <div v-if="cargo">
-      <div class="trace-no-cargo" v-if="notExist">商品不存在</div>
-      <div class="trace-cargo-details" v-else>
-        <div class="name">
-          <img :src="cargoImg">
-          <span>{{cargo.name}}</span>
-        </div>
-        <div>
-          <p>
-            <span class="key">创建者</span>
-            <span class="address">{{cargo.traces[0]}}</span>
-          </p>
-          <p>
-            <span class="key">持有者</span>
-            <span class="address">{{holder}}</span>
-          </p>
-          <p><span class="key">流通次数</span>{{tracesLength}}</p>
-        </div>
-        <ul class="trace-cargo-traces">
-          <li v-for="(node, index) in cargo.traces" :key="index">
-            <user-head :address="node" />
-            <span>{{node}}</span>
-          </li>
-        </ul>
+    <h2>{{$t('Query.title')}}</h2>
+    <div class="trace-transfer" v-if="permissions[address] > 0 && address === holder" @click="startTransferCargo">{{$t('transcargo')}}</div>
+    <div v-if="loaded === 1">{{$t('loading')}}</div>
+    <div v-else-if="notExist && loaded" class="trace-no-cargo">{{$t('Query.nocargoes')}}</div>
+    <div v-else-if="cargo" class="trace-cargo-details">
+      <div class="name">
+        <img :src="cargoImg">
+        <span>{{cargo.name}}</span>
+        <div><span>{{$t('Query.createtime')}}</span>{{cargo.traces[0].time}}</div>
       </div>
+      <div>
+        <p>
+          <span class="key">{{$t('Query.creater')}}</span>
+          <span class="address">{{cargo.traces[0].holder}}</span>
+        </p>
+        <p>
+          <span class="key">{{$t('Query.holder')}}</span>
+          <span class="address">{{holder}}</span>
+        </p>
+        <p><span class="key">{{$t('Query.transcount')}}</span>{{tracesLength}}</p>
+      </div>
+      <ul class="trace-cargo-traces">
+        <li v-for="(node, index) in cargo.traces" :key="index" :time="node.time">
+          <user-head :address="node.holder" />
+          <span>{{node.holder}}</span>
+        </li>
+      </ul>
     </div>
-    <div v-else-if="loaded === 1">加载中...</div>
     <div v-if="showModalBox" class="trace-modal">
       <div class="main">
         <div class="close" @click="closeModal">
@@ -36,12 +35,12 @@
           <span/>
         </div>
         <div class="trace-main-info">
-          <h2>销售商品</h2>
+          <h2>{{$t('transcargo')}}</h2>
           <input type="text" v-model="inputTarget">
-          <div class="notice" v-if="!inputTarget">输入销售地址</div>
+          <div class="notice" v-if="!inputTarget">{{$t('Query.input')}}</div>
           <div class="button" :class="{
             'button-active': utils.isAddress(inputTarget) && !transferState
-          }" @click="transferCargo">确定销售</div>
+          }" @click="transferCargo">{{transferState ? $t('processing') : $t('Query.confirm')}}</div>
         </div>
       </div>
     </div>
@@ -78,6 +77,7 @@ export default {
   },
   computed: {
     ...mapState({
+      permissions: state => state.web3.permissions,
       utils: state => state.web3.utils
     }),
     ...mapGetters({
@@ -93,14 +93,15 @@ export default {
     holder () {
       if (this.cargo) {
         const traces = this.cargo.traces
-        return traces[traces.length - 1]
-      } else {
-        return zeroAddress
+        if (traces.length) {
+          return traces[traces.length - 1].holder
+        }
       }
+      return zeroAddress
     },
     notExist () {
       if (this.cargo) {
-        return !this.cargo.name && (this.cargo.traces[0] === zeroAddress || !this.cargo.traces[0])
+        return this.cargo.traces[0].holder === zeroAddress
       } else {
         return false
       }
@@ -124,7 +125,6 @@ export default {
       }
       this.inputID = inputID
       this.getCargo(inputID).then(res => {
-        console.log(1)
         this.loaded = 2
         this.cargo = res
       })
@@ -150,11 +150,11 @@ export default {
         if (res.events) {
           cargo.update()
           this.inputTarget = ''
-          this.notice(['log', `商品：${cargo.name}已转移至账户：${target}`, 10000])
+          this.notice(['log', this.$t('Notice.cargo') + cargo.name + this.$t('Notice.toaccount') + target, 10000])
         } else if (/reverted by the EVM/.test(res.message)) {
-          this.notice(['error', `未能成功转移商品 输入参数可能有错误或无权操作`, 10000])
+          this.notice(['error', this.$t('Notice.unknow'), 10000])
         } else {
-          this.notice(['error', `未能成功转移商品 可能是由于网络等原因导致的`, 10000])
+          this.notice(['error', this.$t('Notice.neterror'), 10000])
         }
       })
     }
@@ -185,21 +185,25 @@ h2
   text-align center
   color #bbb
   background-color #f0f0f0
-  border-radius 3px
+  border-radius 10px
+  line-height 50px
   padding 10px
 .trace-cargo-details
   .name
     margin 30px 0
     display flex
     align-items center
+    color #666
     img
       width 40px
       height 40px
       border-radius 50%
-    span
+    >span
       margin-left 20px
       font-size 18px
-      color #666
+      flex 1
+    div>span
+      margin-right 10px
   p
     color #333
     font-size 18px
@@ -232,12 +236,21 @@ h2
     display flex
     align-items center
     justify-content space-between
+    &:before
+      content attr(time)
+      position absolute
+      font-size 14px
+      line-height 20px
+      color #999
+      bottom -32px
+      left 50%
+      transform translateX(14px)
     &:after
       content ''
       position absolute
       width 20px
       height 20px
-      top -30px
+      top -31px
       left 50%
       background-size contain
       background-position center
@@ -249,6 +262,9 @@ h2
   li:last-child
     margin-top 0
     &:after
+      content none
+  li:first-child
+    &:before
       content none
 .trace-transfer
   position absolute

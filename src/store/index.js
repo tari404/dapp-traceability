@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 
 import web3 from './web3'
 
+import defaultUserHead from '@/assets/head/default.png'
+
 Vue.use(Vuex)
 
 const defaultUsers = [
@@ -53,7 +55,12 @@ const getters = {
     if (fromCache) {
       return fromCache
     } else {
-      const fromConfig = defaultUsers.find(item => item.address === address)
+      const fromConfig = defaultUsers.find(item => item.address === address) || {
+        index: 4,
+        name: '其他用户',
+        img: defaultUserHead,
+        address
+      }
       cache.set(address, fromConfig)
       return fromConfig
     }

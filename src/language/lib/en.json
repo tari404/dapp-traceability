@@ -1,41 +1,62 @@
 {
-  "title": "商品溯源",
-  "intro": "应用介绍",
-  "introduction": "该应用模拟简化版的商品溯源场景，从生产厂家生产、代销商销售、消费者购买的每一环节都将登记上链，用户可通过商品ID查询商品详情进而了解商品来源以及辨别真伪。",
-  "characterintro": "本应用体验时分为三个角色，生产厂家、代销商、消费者，角色的权限分别是：",
+  "title": "Tracing of Cargoes",
+  "intro": "Introduction",
+  "introduction": "The application simulates a simplified tracing scenario of cargoes, every steps from production to sales and finally to the consumer’s hand will be stored on the chain. Users can check the details of the product through the cargo ID therefore to understand the source of the cargo and its authenticity.",
+  "characterintro": "The application consists of three roles: manufacturer, distributor, and consumer. The rights of each roles are respectively as follows:",
   "characters": [
-    "生产厂家：创建商品、销售商品、查询商品；",
-    "代销商1、代销商2：销售商品、查询商品；",
-    "消费者：查询商品。"
+    "Manufacturer: manufacturing, selling, checking",
+    "Distributor: selling and checking",
+    "Consumer: Checking the cargoes"
   ],
-  "start": "开始体验",
-  "login": "登录",
+  "start": "Start",
+  "login": "Log in",
   "Account": {
-    "select": "选择账号",
+    "select": "Select an account",
     "player": [
-      "生产厂家",
-      "代销商1",
-      "代销商2",
-      "消费者"
+      "Manufacturer",
+      "Distributor 1",
+      "Distributor 2",
+      "Consumer",
+      "Others"
     ],
-    "current": "当前账户",
-    "address": "当前账户地址"
+    "current": "Current account",
+    "address": "Address"
   },
-  "loading": "加载中...",
-  "processing": "处理中...",
-  "cargolist": "我拥有的商品",
-  "cargoquery": "商品查询",
-  "newcargo": "创建商品",
-  "transcargo": "销售商品",
+  "loading": "loading...",
+  "processing": "processing...",
+  "creating": "creating...",
+  "cargolist": "My cargoes",
+  "cargoquery": "cargoes search",
+  "newcargo": "Create a cargo",
+  "transcargo": "Merchandising ",
+  "Query": {
+    "title": "Cargo details",
+    "nocargoes": "this cargo does not exist.",
+    "createtime": "Create time",
+    "creater": "Founder",
+    "holder": "Holder",
+    "transcount": "Transfer times",
+    "input": "Enter the target address",
+    "confirm": "Confirm"
+  },
+  "Cargoes": {
+    "norecords": "no cargoes",
+    "input": "Enter the cargo's ID",
+    "query": "Check",
+    "inputname": "Enter the cargo's name",
+    "confirm": "Confirm"
+  },
   "Notice": {
-    "success": "操作成功",
-    "unknow": "操作失败 请尝试刷新页面并重试",
-    "neterror": "操作失败 可能是由于网络等原因导致的"
+    "cargo": "The cargo: ",
+    "toaccount": "has transferred to account: ",
+    "success": "Successful",
+    "unknow": "Failure to transfer the cargo. Input parameters may have errors or unauthorized",
+    "neterror": "Failure to transfer the cargo. It may be due to the network or other reasons"
   },
-  "Gamenotice": {
-    "join": "已加入游戏",
-    "wait": "需等待另一名玩家加入",
-    "error": "未能创建或参与新游戏 请检查是否已经有一个等待中的游戏",
-    "neterror": "未能创建或参与新游戏 可能是由于网络等原因导致的"
+  "Createnotice": {
+    "success": "The cargo creation successful, name: ",
+    "error": "Failed to create the cargo: ",
+    "unknow": " Please confirm with the administrator whether there are operational privileges",
+    "neterror": " It may be due to the network or other reasons"
   }
 }
