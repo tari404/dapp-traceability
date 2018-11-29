@@ -1,5 +1,6 @@
 {
   "title": "Tracing of Cargoes",
+  "goback": "go back",
   "intro": "Introduction",
   "introduction": "The application simulates a simplified tracing scenario of cargoes, every steps from production to sales and finally to the consumer’s hand will be stored on the chain. Users can check the details of the product through the cargo ID therefore to understand the source of the cargo and its authenticity.",
   "characterintro": "The application consists of three roles: manufacturer, distributor, and consumer. The rights of each roles are respectively as follows:",

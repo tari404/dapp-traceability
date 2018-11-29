@@ -9,6 +9,7 @@
           <span :class="{ 'focus': $i18n.locale === 'en' }"
             @click="toggleLang('en')">English</span>
         </div>
+        <div v-if="route === 'query'" class="trace-back" @click="goback">{{$t('goback')}}</div>
       </div>
     </nav>
     <section v-if="beforeEnter">
@@ -92,6 +93,9 @@ export default {
     toggleLang (locale) {
       this.$i18n.locale = locale
       document.title = this.$t('title')
+    },
+    goback () {
+      this.route = 'info'
     },
     start () {
       this.beforeEnter = false
@@ -204,6 +208,16 @@ nav
     background-color #1e64b4
     color #fff
     border-color #1e64b4
+.trace-back
+  position absolute
+  top 50%
+  left 0
+  transform translateY(-50%)
+  color #333
+  cursor pointer
+  transition color .3s
+  &:hover
+    color #1e64b4
 section
   margin 20px 10px
   display flex

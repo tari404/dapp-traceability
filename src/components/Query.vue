@@ -2,9 +2,10 @@
   <div class="main-width trace-content">
     <h2>{{$t('Query.title')}}</h2>
     <div class="trace-transfer" v-if="permissions[address] > 0 && address === holder" @click="startTransferCargo">{{$t('transcargo')}}</div>
+    <div class="trace-id">ID - {{cargoID}}</div>
     <div v-if="loaded === 1">{{$t('loading')}}</div>
     <div v-else-if="notExist && loaded" class="trace-no-cargo">{{$t('Query.nocargoes')}}</div>
-    <div v-else-if="cargo" class="trace-cargo-details">
+    <div v-else-if="cargo && loaded" class="trace-cargo-details">
       <div class="name">
         <img :src="cargoImg">
         <span>{{cargo.name}}</span>
@@ -173,14 +174,12 @@ h2
   font-weight 500
   font-size 20px
   line-height 20px
-.trace-query-input
-  margin-top 10px
-  display flex
-  #input-cargo-name
-    flex 1 1 auto
-  .trace-button
-    margin-left 20px
-    flex 0 0 80px
+.trace-id
+  margin 30px -30px
+  padding 0 30px
+  line-height 30px
+  height 28px
+  background-color #fafafa
 .trace-no-cargo
   text-align center
   color #bbb

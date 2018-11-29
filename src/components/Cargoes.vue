@@ -207,11 +207,11 @@ h2
     width 60px
     height 60px
     border-radius 50%
-    margin 6px 10px
+    margin 6px 8px
   .name
     white-space nowrap
     overflow hidden
-    width 100px
+    width 110px
     margin 0 10px
     font-size 18px
     color #666

@@ -10,7 +10,7 @@ const contract = new web3.eth.Contract(ABI, contractAddress)
 class Cargo {
   constructor (id) {
     this.id = id
-    this.name = ''
+    this.name = '...'
     this.traces = [{
       time: '...',
       holder: '...'
