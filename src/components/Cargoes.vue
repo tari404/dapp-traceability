@@ -6,7 +6,10 @@
         <img :src="user.img">
         <span>{{$t(`Account.player[${user.index}]`)}}</span>
       </div>
-      <p>{{$t('Account.address')}} {{address}}</p>
+      <p>
+        <span class="key">{{$t('Account.address')}}</span>
+        <span class="hash">{{address}}</span>
+      </p>
     </div>
     <div class="main-width trace-content">
       <h2 class="trace-content-title">{{$t('cargolist')}}</h2>
@@ -150,16 +153,22 @@ h2
   div
     margin 30px 0
     display flex
-  img
-    width 40px
-    height 40px
-    border-radius 20px
-    margin-right 20px
-  span
-    line-height 40px
+    img
+      width 40px
+      height 40px
+      border-radius 20px
+      margin-right 20px
+    span
+      line-height 40px
   p
     margin 0
+    display flex
     line-height 20px
+    .key
+      flex 0 0 140px
+    .hash
+      overflow hidden
+      text-overflow ellipsis
 
 .trace-create-new
   position absolute
