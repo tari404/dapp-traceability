@@ -45,7 +45,7 @@
           <div class="notice" v-if="!inputName">{{$t('Cargoes.inputname')}}</div>
           <div class="button" :class="{
             'button-active': inputName && !creationState
-          }" @click="createCargo">{{creationState ? $t('creating') : $t('Cardoes.confirm')}}</div>
+          }" @click="createCargo">{{creationState ? $t('creating') : $t('Cargoes.confirm')}}</div>
         </div>
       </div>
     </div>
