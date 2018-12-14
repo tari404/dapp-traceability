@@ -1,0 +1,4 @@
+{
+  "web3Provider": "<your rpc-enabled node>",
+  "contractAddress": "<your contract address>"
+}
