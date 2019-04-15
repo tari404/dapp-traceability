@@ -1,4 +1,4 @@
-import Web3 from 'web3'
+import Web3 from 'web3true'
 
 import ABI from './ABI.json'
 import config from '../../config.json'
