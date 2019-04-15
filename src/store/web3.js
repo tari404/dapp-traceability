@@ -153,7 +153,7 @@ export default {
       const address = defaultUser[state.userIndex].address
       return contract.methods.createNewCargo(name).send({
         from: address,
-        gasPrice: 1,
+        gasPrice: 1000000,
         gas: 3000000
       }).catch(err => {
         dispatch('checkNetwork')
@@ -164,7 +164,7 @@ export default {
       const address = defaultUser[state.userIndex].address
       return contract.methods.transfer(id, target).send({
         from: address,
-        gasPrice: 1,
+        gasPrice: 1000000,
         gas: 3000000
       }).catch(err => {
         dispatch('checkNetwork')
@@ -175,7 +175,7 @@ export default {
       const address = defaultUser[state.userIndex].address
       return contract.methods.setPermission(target, permissive).send({
         from: address,
-        gasPrice: 1,
+        gasPrice: 1000000,
         gas: 3000000
       }).then(res => {
         dispatch('updatePermission', target)
